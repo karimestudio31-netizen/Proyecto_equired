@@ -1,5 +1,5 @@
 # Proyecto_equired
-Plataforma web desarrollada en PHP y MySQL basada en el **ODS 10: Reducción de desigualdades**.
+Plataforma web basada en el **ODS 10: Reducción de desigualdades**.
 
 ##  Funcionalidades
 
