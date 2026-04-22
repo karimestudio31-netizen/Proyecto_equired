@@ -1,5 +1,5 @@
 # Proyecto_equired
-Plataforma web basada en el **ODS 10: Reducción de desigualdades**.
+Plataforma web basada en el **ODS 10: Reducción de las desigualdades**.
 
 ##  Funcionalidades
 
@@ -31,4 +31,5 @@ Plataforma web basada en el **ODS 10: Reducción de desigualdades**.
 ## 👩‍💻 Autores:
 
 Karime Gómez
+
 José paez
