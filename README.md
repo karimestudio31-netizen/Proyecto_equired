@@ -14,7 +14,6 @@ Plataforma web basada en el **ODS 10: Reducción de las desigualdades**.
 
 * PHP
 * MySQL
-* HTML
 * CSS
 * XAMPP
 
