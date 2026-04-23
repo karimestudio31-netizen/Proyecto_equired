@@ -133,6 +133,12 @@ $msg = $_GET['msg'] ?? '';
 
 <div class="feed-container">
 
+   <!-- Banner primero -->
+    <div class="home-banner" style="margin-bottom:18px;">
+        <h2>Construyendo Igualdad Juntos</h2>
+        <p>Buscamos construir una sociedad más justa donde todas las personas tengan las mismas oportunidades. Cada mensaje es una invitación a creer en un futuro más inclusivo.</p>
+    </div>
+
     <!-- Buscador -->
     <form method="GET" action="home.php">
         <div class="feed-search">
@@ -174,11 +180,6 @@ $msg = $_GET['msg'] ?? '';
         </div>
     </div>
 
-    <!-- Banner primero -->
-    <div class="home-banner" style="margin-bottom:18px;">
-        <h2>Construyendo Igualdad Juntos</h2>
-        <p>Buscamos construir una sociedad más justa donde todas las personas tengan las mismas oportunidades. Cada mensaje es una invitación a creer en un futuro más inclusivo.</p>
-    </div>
 
     <!-- Publicaciones -->
     <?php if(empty($publicaciones)): ?>

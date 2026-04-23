@@ -1,5 +1,6 @@
 <?php
 session_start();
+if(!isset($_SESSION['usuario'])){ header("Location: login.php"); exit(); }
 require_once("config/conexion.php");
 
 $rol        = $_SESSION['rol'] ?? '';
@@ -87,14 +88,12 @@ $empleos = $pdo->query("SELECT e.*,u.nombre AS empresa_nombre FROM empleos e JOI
         .bmd{flex:2;padding:12px;background:#dc2626;color:white;border:none;border-radius:10px;font-weight:800;font-family:inherit;cursor:pointer}
         .fl{display:flex;align-items:center;gap:8px;padding:12px 14px;border:1.5px dashed #d8b4fe;border-radius:10px;cursor:pointer;font-size:14px;color:#7b2ff7;font-weight:700;margin-bottom:14px;background:#faf5ff}
         .fl input{display:none}
-        /* Postulaciones */
         .pi{background:#fafafa;border-radius:12px;padding:14px 16px;margin-bottom:10px;border-left:4px solid #7b2ff7;display:flex;justify-content:space-between;align-items:center}
         .pi.aceptado{border-left-color:#10b981}.pi.rechazado{border-left-color:#ef4444}
         .pi-info strong{display:block;font-size:14px;font-weight:800;color:#1a1a2e}
         .pi-info span{font-size:12px;color:#888}
         .eb{padding:4px 12px;border-radius:50px;font-size:12px;font-weight:800}
         .ep{background:#fef3c7;color:#d97706}.ea{background:#d1fae5;color:#059669}.er{background:#fee2e2;color:#dc2626}
-        /* Vacantes empresa */
         .vacante-item{background:#fafafa;border-radius:12px;padding:16px;margin-bottom:12px;border:1.5px solid #f0f0f0;transition:border-color 0.2s}
         .vacante-item:hover{border-color:#7b2ff7}
         .vi-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
@@ -102,7 +101,6 @@ $empleos = $pdo->query("SELECT e.*,u.nombre AS empresa_nombre FROM empleos e JOI
         .vi-tipo{font-size:11px;font-weight:700;padding:4px 10px;border-radius:50px;background:#f3e8ff;color:#7b2ff7}
         .vi-meta{font-size:13px;color:#888}
         .btn-ver-hv{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#7b2ff7,#a855f7);color:white;padding:8px 16px;border-radius:8px;font-weight:700;font-size:13px;border:none;cursor:pointer;font-family:inherit;margin-top:8px}
-        /* Hojas de vida */
         .hv-item{background:white;border-radius:12px;padding:16px;margin-bottom:10px;border:1.5px solid #e8e8e8}
         .hv-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
         .hv-nombre{font-size:14px;font-weight:800;color:#1a1a2e}
@@ -113,6 +111,13 @@ $empleos = $pdo->query("SELECT e.*,u.nombre AS empresa_nombre FROM empleos e JOI
         .ba-acep{background:#d1fae5;color:#059669}
         .ba-rech{background:#fee2e2;color:#dc2626}
         .ns{text-align:center;padding:30px;color:#aaa}
+        /* Empresa card en modal */
+        .empresa-item{display:flex;align-items:center;gap:14px;padding:14px;border-radius:12px;border:1.5px solid #f0f0f0;margin-bottom:10px;cursor:pointer;transition:border-color 0.2s,box-shadow 0.2s}
+        .empresa-item:hover{border-color:#7b2ff7;box-shadow:0 4px 12px rgba(123,47,247,0.1)}
+        .empresa-avatar{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,#7b2ff7,#a855f7);display:flex;align-items:center;justify-content:center;font-size:20px;color:white;font-weight:800;overflow:hidden;flex-shrink:0}
+        .empresa-avatar img{width:100%;height:100%;object-fit:cover}
+        .empresa-nombre{font-size:15px;font-weight:800;color:#1a1a2e}
+        .empresa-desc{font-size:13px;color:#888}
     </style>
 </head>
 <body>
@@ -150,7 +155,14 @@ $empleos = $pdo->query("SELECT e.*,u.nombre AS empresa_nombre FROM empleos e JOI
     <!-- Stats -->
     <div class="stats-row">
         <div class="stat-card"><div class="stat-num"><?= $total_empleos ?></div><div class="stat-label">Empleos disponibles</div></div>
-        <div class="stat-card"><div class="stat-num"><?= $total_empresas>0?$total_empresas:'150+' ?></div><div class="stat-label">Empresas</div></div>
+
+        <!-- Empresas clickeable -->
+        <div class="stat-card clickable" onclick="document.getElementById('mEmpresas').classList.add('active')" title="Ver empresas">
+            <div class="stat-num"><?= $total_empresas>0?$total_empresas:'0' ?></div>
+            <div class="stat-label">Empresas registradas</div>
+            <div class="stat-hint">👆 Ver empresas</div>
+        </div>
+
         <?php if($rol==='empresa' && $usuario_id): ?>
             <div class="stat-card clickable" onclick="document.getElementById('mVacantes').classList.add('active')" title="Ver mis vacantes">
                 <div class="stat-num"><?= count($mis_vacantes) ?></div>
@@ -188,8 +200,6 @@ $empleos = $pdo->query("SELECT e.*,u.nombre AS empresa_nombre FROM empleos e JOI
                 <div class="ed"><?= $e[7] ?></div>
                 <?php if(isset($_SESSION['usuario']) && $rol!=='empresa'): ?>
                     <button class="btn-postular" onclick="abrirPostular(0,'<?= htmlspecialchars($e[1],ENT_QUOTES) ?>')">Postularme</button>
-                <?php elseif(!isset($_SESSION['usuario'])): ?>
-                    <a href="login.php" class="btn-postular" style="display:block;text-align:center;padding:11px;text-decoration:none">Postularme</a>
                 <?php endif; ?>
             </div>
             <?php endforeach;
@@ -206,8 +216,6 @@ $empleos = $pdo->query("SELECT e.*,u.nombre AS empresa_nombre FROM empleos e JOI
                 <div class="ed"><?= htmlspecialchars(substr($emp['descripcion'],0,120)) ?>...</div>
                 <?php if(isset($_SESSION['usuario']) && $rol!=='empresa'): ?>
                     <button class="btn-postular" onclick="abrirPostular(<?= $emp['id'] ?>,'<?= htmlspecialchars($emp['titulo'],ENT_QUOTES) ?>')">Postularme</button>
-                <?php elseif(!isset($_SESSION['usuario'])): ?>
-                    <a href="login.php" class="btn-postular" style="display:block;text-align:center;padding:11px;text-decoration:none">Postularme</a>
                 <?php endif; ?>
             </div>
             <?php $i++; endforeach;
@@ -215,7 +223,7 @@ $empleos = $pdo->query("SELECT e.*,u.nombre AS empresa_nombre FROM empleos e JOI
     </div>
 </div>
 
-<!-- Modal publicar empleo (empresa) -->
+<!-- ══ Modal publicar empleo (empresa) ══ -->
 <?php if($rol==='empresa'): ?>
 <div class="modal-overlay" id="mEmpleo">
     <div class="modal">
@@ -243,7 +251,7 @@ $empleos = $pdo->query("SELECT e.*,u.nombre AS empresa_nombre FROM empleos e JOI
     </div>
 </div>
 
-<!-- Modal vacantes + postulantes (empresa) -->
+<!-- ══ Modal vacantes + postulantes (empresa) ══ -->
 <div class="modal-overlay" id="mVacantes">
     <div class="modal" style="max-width:620px">
         <button class="modal-close" onclick="document.getElementById('mVacantes').classList.remove('active')">✕</button>
@@ -269,7 +277,7 @@ $empleos = $pdo->query("SELECT e.*,u.nombre AS empresa_nombre FROM empleos e JOI
     </div>
 </div>
 
-<!-- Modal hojas de vida de una vacante -->
+<!-- ══ Modal hojas de vida de una vacante ══ -->
 <div class="modal-overlay" id="mHV">
     <div class="modal" style="max-width:620px">
         <button class="modal-close" onclick="document.getElementById('mHV').classList.remove('active')">✕</button>
@@ -277,10 +285,9 @@ $empleos = $pdo->query("SELECT e.*,u.nombre AS empresa_nombre FROM empleos e JOI
         <div id="mHV-contenido"><div style="text-align:center;padding:20px;color:#aaa">Cargando...</div></div>
     </div>
 </div>
-
 <?php endif; ?>
 
-<!-- Modal mis postulaciones (beneficiario/profesional) -->
+<!-- ══ Modal mis postulaciones (beneficiario/profesional) ══ -->
 <?php if(isset($_SESSION['usuario']) && $rol!=='empresa'): ?>
 <div class="modal-overlay" id="mPostulaciones">
     <div class="modal">
@@ -305,7 +312,7 @@ $empleos = $pdo->query("SELECT e.*,u.nombre AS empresa_nombre FROM empleos e JOI
     </div>
 </div>
 
-<!-- Modal postular con PDF -->
+<!-- ══ Modal postular con PDF ══ -->
 <div class="modal-overlay" id="mPostular">
     <div class="modal">
         <button class="modal-close" onclick="document.getElementById('mPostular').classList.remove('active')">✕</button>
@@ -327,6 +334,38 @@ $empleos = $pdo->query("SELECT e.*,u.nombre AS empresa_nombre FROM empleos e JOI
 </div>
 <?php endif; ?>
 
+<!-- ══ Modal empresas registradas ══ -->
+<div class="modal-overlay" id="mEmpresas">
+    <div class="modal" style="max-width:560px">
+        <button class="modal-close" onclick="document.getElementById('mEmpresas').classList.remove('active')">✕</button>
+        <h3>🏢 Empresas registradas</h3>
+        <p class="modal-sub">Haz click en una empresa para ver su perfil.</p>
+        <?php
+        $empresas_lista = $pdo->query("SELECT id, nombre, descripcion, foto_perfil FROM usuarios WHERE rol='empresa' ORDER BY nombre ASC")->fetchAll();
+        if(empty($empresas_lista)): ?>
+            <div class="ns"><div style="font-size:36px;margin-bottom:10px">📭</div><p>No hay empresas registradas aún.</p></div>
+        <?php else: foreach($empresas_lista as $emp): ?>
+            <div class="empresa-item" onclick="window.location.href='perfil.php?id=<?= $emp['id'] ?>'">
+                <div class="empresa-avatar">
+                    <?php if(!empty($emp['foto_perfil'])): ?>
+                        <img src="uploads/<?= htmlspecialchars($emp['foto_perfil']) ?>" alt="">
+                    <?php else: ?>
+                        <?= strtoupper(substr($emp['nombre'],0,1)) ?>
+                    <?php endif; ?>
+                </div>
+                <div>
+                    <div class="empresa-nombre"><?= htmlspecialchars($emp['nombre']) ?></div>
+                    <div class="empresa-desc"><?= !empty($emp['descripcion']) ? htmlspecialchars(substr($emp['descripcion'],0,60)).'...' : 'Sin descripción aún' ?></div>
+                </div>
+                <span style="margin-left:auto;color:#7b2ff7;font-size:18px">›</span>
+            </div>
+        <?php endforeach; endif; ?>
+        <div class="modal-btns" style="margin-top:10px">
+            <button class="bmc" onclick="document.getElementById('mEmpresas').classList.remove('active')">Cerrar</button>
+        </div>
+    </div>
+</div>
+
 <footer class="footer">© 2026 EquiRed. Conectando oportunidades, construyendo igualdad.</footer>
 
 <script>
@@ -339,12 +378,14 @@ function filtrar(){
         c.style.display=(ob&&ot)?'':'none';
     });
 }
+
 function abrirPostular(id, titulo){
     document.getElementById('mPostular-id').value=id;
     document.getElementById('mPostular-titulo-h').value=titulo;
     document.getElementById('mPostular-titulo').textContent='💼 '+titulo;
     document.getElementById('mPostular').classList.add('active');
 }
+
 function verHojaVida(empleoId, titulo){
     document.getElementById('mHV-titulo').textContent='📄 Hojas de vida — '+titulo;
     document.getElementById('mHV-contenido').innerHTML='<div style="text-align:center;padding:20px;color:#aaa">Cargando...</div>';
@@ -353,7 +394,10 @@ function verHojaVida(empleoId, titulo){
     fetch('acciones/obtener_hojas_vida.php?empleo_id='+empleoId)
     .then(r=>r.json()).then(data=>{
         const c=document.getElementById('mHV-contenido');
-        if(data.length===0){c.innerHTML='<div class="ns"><div style="font-size:36px;margin-bottom:10px">📭</div><p>Aún no hay postulantes.</p></div>';return;}
+        if(data.length===0){
+            c.innerHTML='<div class="ns"><div style="font-size:36px;margin-bottom:10px">📭</div><p>Aún no hay postulantes.</p></div>';
+            return;
+        }
         c.innerHTML=data.map(p=>`
             <div class="hv-item" id="hv-${p.id}">
                 <div class="hv-header">
@@ -363,18 +407,26 @@ function verHojaVida(empleoId, titulo){
                     </span>
                 </div>
                 <div class="hv-info">📧 ${p.email} &nbsp;·&nbsp; 📅 ${p.fecha}</div>
-                ${p.hoja_vida?`<a class="hv-link" href="uploads/${p.hoja_vida}" target="_blank">📄 Ver hoja de vida (PDF)</a>`:'<span style="color:#aaa;font-size:13px">Sin PDF adjunto</span>'}
-                ${p.estado==='pendiente'?`
+                ${p.hoja_vida
+                    ? `<a class="hv-link" href="uploads/${p.hoja_vida}" target="_blank">📄 Ver hoja de vida (PDF)</a>`
+                    : '<span style="color:#aaa;font-size:13px">Sin PDF adjunto</span>'
+                }
+                ${p.estado==='pendiente' ? `
                 <div class="hv-acciones">
                     <button class="ba ba-acep" onclick="responderPost(${p.id},'aceptado')">✅ Aceptar</button>
                     <button class="ba ba-rech" onclick="responderPost(${p.id},'rechazado')">❌ Rechazar</button>
-                </div>`:''}
+                </div>` : ''}
             </div>
         `).join('');
     });
 }
+
 function responderPost(id, estado){
-    fetch('acciones/responder_postulacion.php',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:`postulacion_id=${id}&estado=${estado}`})
+    fetch('acciones/responder_postulaciones.php',{
+        method:'POST',
+        headers:{'Content-Type':'application/x-www-form-urlencoded'},
+        body:`postulacion_id=${id}&estado=${estado}`
+    })
     .then(r=>r.json()).then(d=>{
         if(d.ok){
             const badge=document.getElementById('hv-estado-'+id);
@@ -386,8 +438,10 @@ function responderPost(id, estado){
         }
     });
 }
+
 setTimeout(()=>{const t=document.querySelector('.toast');if(t)t.style.display='none';},3500);
 </script>
+
 <?php function t($f){$d=time()-strtotime($f);if($d<60)return"ahora";if($d<3600)return round($d/60)."min";if($d<86400)return round($d/3600)."h";return round($d/86400)." días";} ?>
 </body>
 </html>

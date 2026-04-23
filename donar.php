@@ -1,5 +1,6 @@
 <?php
 session_start();
+if(!isset($_SESSION['usuario'])){ header("Location: login.php"); exit(); }
 require_once("config/conexion.php");
 
 $buscar     = trim($_GET['buscar'] ?? '');
@@ -227,7 +228,13 @@ $msg = $_GET['msg'] ?? '';
         <!-- Header con menú 3 puntos -->
         <div class="don-header">
             <div class="don-user">
-                <div class="don-avatar"><?= strtoupper(substr($don['nombre'],0,1)) ?></div>
+                <div class="don-avatar">
+    <?php if(!empty($don['foto_perfil'])): ?>
+        <img src="uploads/<?= htmlspecialchars($don['foto_perfil']) ?>" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+    <?php else: ?>
+        <?= strtoupper(substr($don['nombre'],0,1)) ?>
+    <?php endif; ?>
+</div>
                 <div>
                     <strong><?= htmlspecialchars($don['nombre']) ?></strong>
                     <span><?= t($don['fecha']) ?></span>

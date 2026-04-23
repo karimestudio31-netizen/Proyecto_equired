@@ -22,13 +22,12 @@ if($logueado && isset($_SESSION['usuario_id'])) {
     </a>
 
     <div class="menu">
-        <a href="home.php"      class="<?= $pagina_actual==='home.php'      ? 'active':'' ?>">Inicio</a>
-        <a href="empleos.php"   class="<?= $pagina_actual==='empleos.php'   ? 'active':'' ?>">Empleos</a>
-        <a href="donar.php"     class="<?= $pagina_actual==='donar.php'     ? 'active':'' ?>">Donar</a>
-        <a href="asesorias.php" class="<?= $pagina_actual==='asesorias.php' ? 'active':'' ?>">Asesorías</a>
-
         <?php if($logueado): ?>
-            <!-- Avatar + nombre como botón de perfil -->
+            <a href="home.php"      class="<?= $pagina_actual==='home.php'      ? 'active':'' ?>">Inicio</a>
+            <a href="empleos.php"   class="<?= $pagina_actual==='empleos.php'   ? 'active':'' ?>">Empleos</a>
+            <a href="donar.php"     class="<?= $pagina_actual==='donar.php'     ? 'active':'' ?>">Donar</a>
+            <a href="asesorias.php" class="<?= $pagina_actual==='asesorias.php' ? 'active':'' ?>">Asesorías</a>
+
             <a href="perfil.php" class="nav-perfil-btn" title="Mi perfil">
                 <div class="nav-avatar">
                     <?php if(!empty($foto_nav)): ?>
@@ -39,9 +38,8 @@ if($logueado && isset($_SESSION['usuario_id'])) {
                 </div>
                 <span><?= htmlspecialchars(explode(' ', $_SESSION['usuario'])[0]) ?></span>
             </a>
-            <a href="acciones/logout.php" class="btn-nav-logout">Salir</a>
-        <?php else: ?>
-            <a href="login.php" class="btn-nav-login">Ingresar</a>
+            <a href="#" class="btn-nav-logout" onclick="confirmarSalir(event)">Salir</a>
+
         <?php endif; ?>
     </div>
 </nav>
@@ -64,4 +62,15 @@ if($logueado && isset($_SESSION['usuario_id'])) {
     overflow:hidden; flex-shrink:0;
 }
 .nav-avatar img { width:100%; height:100%; object-fit:cover; }
+
+</style>
+<script>
+function confirmarSalir(e) {
+    e.preventDefault();
+    if(confirm('¿Estás seguro que deseas cerrar sesión?')) {
+        window.location.href = 'acciones/logout.php';
+    }
+}
+</script>
+
 </style>
