@@ -9,11 +9,22 @@ if(!isset($_SESSION['usuario_id']) || $_SESSION['rol'] !== 'profesional'){
 
 $servicio_id = (int)($_POST['servicio_id'] ?? 0);
 $usuario_id  = $_SESSION['usuario_id'];
+$horarios    = json_decode(urldecode($_POST['horarios'] ?? '[]'), true);
 
+if(!$servicio_id || empty($horarios)){ echo json_encode(['ok'=>false]); exit(); }
+
+// Verificar que el servicio pertenece al profesional
 $check = $pdo->prepare("SELECT id FROM servicios WHERE id=? AND profesional_id=?");
 $check->execute([$servicio_id, $usuario_id]);
 if(!$check->fetch()){ echo json_encode(['ok'=>false]); exit(); }
 
-$pdo->prepare("DELETE FROM servicios WHERE id=?")->execute([$servicio_id]);
+foreach($horarios as $h){
+    $h = trim($h);
+    if(!empty($h)){
+        $pdo->prepare("INSERT INTO horarios (servicio_id, dia_hora, disponible) VALUES (?,?,1)")
+            ->execute([$servicio_id, $h]);
+    }
+}
+
 echo json_encode(['ok'=>true]);
 ?>

@@ -9,7 +9,7 @@ $post_id    = (int)($_POST['postulacion_id']??0);
 $estado     = $_POST['estado']??'';
 $empresa_id = $_SESSION['usuario_id'];
 
-if(!in_array($estado,['aceptado','rechazado'])||!$post_id){ echo json_encode(['ok'=>false]); exit(); }
+if(!in_array($estado,['aceptado','rechazado','seleccionado_1','seleccionado_2','proceso_finalizado'])||!$post_id){ echo json_encode(['ok'=>false]); exit(); }
 
 // Verificar que la postulación es de una vacante de esta empresa
 $check=$pdo->prepare("SELECT p.id FROM postulaciones p JOIN empleos e ON p.empleo_id=e.id WHERE p.id=? AND e.empresa_id=?");

@@ -27,6 +27,7 @@ if($logueado && isset($_SESSION['usuario_id'])) {
             <a href="empleos.php"   class="<?= $pagina_actual==='empleos.php'   ? 'active':'' ?>">Empleos</a>
             <a href="donar.php"     class="<?= $pagina_actual==='donar.php'     ? 'active':'' ?>">Donar</a>
             <a href="asesorias.php" class="<?= $pagina_actual==='asesorias.php' ? 'active':'' ?>">Asesorías</a>
+            <a href="chat.php" class="<?= $pagina_actual==='chat.php' ? 'active':'' ?>">Chats</a>
 
             <a href="perfil.php" class="nav-perfil-btn" title="Mi perfil">
                 <div class="nav-avatar">

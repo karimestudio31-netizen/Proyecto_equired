@@ -16,7 +16,7 @@ $likeCol = $usuario_id
     ? "(SELECT COUNT(*) FROM likes_donacion WHERE donacion_id=d.id AND usuario_id=$usuario_id) AS yo_di_like"
     : "0 AS yo_di_like";
 
-$sql = "SELECT d.*, u.nombre,
+$sql = "SELECT d.*, u.nombre,  u.foto_perfil,
     (SELECT COUNT(*) FROM likes_donacion l WHERE l.donacion_id=d.id) AS total_likes,
     (SELECT COUNT(*) FROM comentarios_donacion c WHERE c.donacion_id=d.id) AS total_comentarios,
     (SELECT COUNT(*) FROM solicitudes_donacion s WHERE s.donacion_id=d.id) AS total_solicitudes,
@@ -72,7 +72,7 @@ $msg = $_GET['msg'] ?? '';
         .don-card{background:white;border-radius:16px;margin-bottom:18px;box-shadow:0 2px 12px rgba(0,0,0,0.06);overflow:visible}
         .don-header{display:flex;justify-content:space-between;align-items:flex-start;padding:16px 20px 10px;position:relative}
         .don-user{display:flex;align-items:center;gap:12px}
-        .don-avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#f97316,#fb923c);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;color:white;font-weight:800}
+        .don-avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#f97316,#fb923c);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;color:white;font-weight:800;overflow:hidden}
         .don-user strong{display:block;font-size:15px;font-weight:800;color:#1a1a2e}
         .don-user span{font-size:12px;color:#aaa}
 
@@ -169,6 +169,7 @@ $msg = $_GET['msg'] ?? '';
         .confirm-box p{color:#555;font-size:15px;margin-bottom:20px;line-height:1.6}
     </style>
 </head>
+
 <body>
 
 <?php include("includes/navbar.php"); ?>
@@ -227,19 +228,21 @@ $msg = $_GET['msg'] ?? '';
 
         <!-- Header con menú 3 puntos -->
         <div class="don-header">
-            <div class="don-user">
-                <div class="don-avatar">
-    <?php if(!empty($don['foto_perfil'])): ?>
-        <img src="uploads/<?= htmlspecialchars($don['foto_perfil']) ?>" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
-    <?php else: ?>
-        <?= strtoupper(substr($don['nombre'],0,1)) ?>
-    <?php endif; ?>
-</div>
-                <div>
-                    <strong><?= htmlspecialchars($don['nombre']) ?></strong>
-                    <span><?= t($don['fecha']) ?></span>
-                </div>
-            </div>
+          <div class="don-user">
+    <a href="perfil.php?id=<?= $don['usuario_id'] ?>" class="don-avatar" style="text-decoration:none">
+        <?php if(!empty($don['foto_perfil'])): ?>
+            <img src="uploads/<?= htmlspecialchars($don['foto_perfil']) ?>" alt="" style="width:100%;height:100%;object-fit:cover;">
+        <?php else: ?>
+            <?= strtoupper(substr($don['nombre'],0,1)) ?>
+        <?php endif; ?>
+    </a>
+    <div>
+        <a href="perfil.php?id=<?= $don['usuario_id'] ?>" style="text-decoration:none;color:inherit">
+            <strong><?= htmlspecialchars($don['nombre']) ?></strong>
+        </a>
+        <span><?= t($don['fecha']) ?></span>
+    </div>
+</div> 
 
             <!-- Menú 3 puntos -->
             <div class="don-menu-wrap">
@@ -315,7 +318,9 @@ $msg = $_GET['msg'] ?? '';
             <?php elseif(!isset($_SESSION['usuario'])): ?>
                 <a href="login.php" class="don-action-btn btn-solicitar-don">Solicitar</a>
             <?php else: ?>
-                <button class="don-action-btn btn-solicitar-don" disabled style="opacity:0.5;cursor:not-allowed">Tu publicación</button>
+               <button class="don-action-btn btn-solicitar-don" onclick="verSolicitudes(<?= $don['id'] ?>)">
+    Ver solicitudes (<?= $don['total_solicitudes'] ?>)
+</button>
             <?php endif; ?>
         </div>
 
@@ -346,7 +351,6 @@ $msg = $_GET['msg'] ?? '';
 
     <?php endforeach; endif; ?>
 
-    <button class="btn-cargar-mas">Cargar más donaciones</button>
 </div>
 
 <!-- ── Modal publicar donación ── -->
@@ -498,8 +502,67 @@ function abrirSolicitar(id, titulo) {
 
 // Auto-ocultar toast
 setTimeout(()=>{ const t=document.querySelector('.toast'); if(t) t.style.display='none'; },3500);
+
+function verSolicitudes(donacionId) {
+    document.getElementById('modalMisSolicitudes').classList.add('active');
+    document.getElementById('listaSolicitudesDon').innerHTML = '<div style="text-align:center;padding:20px;color:#aaa">Cargando...</div>';
+    
+    fetch('acciones/obtener_solicitudes_donacion.php?donacion_id=' + donacionId)
+    .then(r => r.json())
+    .then(data => {
+        const cont = document.getElementById('listaSolicitudesDon');
+        if(data.length === 0) {
+            cont.innerHTML = '<div style="text-align:center;padding:30px;color:#aaa"><div style="font-size:36px;margin-bottom:10px">📭</div><p>Nadie ha solicitado esta donación aún.</p></div>';
+            return;
+        }
+        cont.innerHTML = data.map(s => `
+            <div style="background:#f9f9f9;border-radius:12px;padding:16px;margin-bottom:12px;border-left:4px solid #7b2ff7">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+                    <div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#7b2ff7,#a855f7);display:flex;align-items:center;justify-content:center;font-size:16px;color:white;font-weight:800;overflow:hidden;flex-shrink:0">
+                        ${s.foto_perfil 
+                            ? `<img src="uploads/${s.foto_perfil}" style="width:100%;height:100%;object-fit:cover">`
+                            : s.nombre.charAt(0).toUpperCase()
+                        }
+                    </div>
+                    <div style="flex:1">
+                        <div style="font-size:15px;font-weight:800;color:#1a1a2e">${s.nombre}</div>
+                        <div style="font-size:12px;color:#a855f7;font-weight:700;text-transform:capitalize">${s.rol}</div>
+                    </div>
+                    <div style="font-size:11px;color:#aaa">${new Date(s.fecha).toLocaleDateString('es-CO')}</div>
+                </div>
+                ${s.mensaje ? `<div style="font-size:14px;color:#555;background:white;padding:10px 14px;border-radius:10px;margin-bottom:10px;line-height:1.6">💬 ${s.mensaje}</div>` : ''}
+                <div style="display:flex;gap:8px">
+                    <a href="perfil.php?id=${s.solicitante_id}" 
+                        style="flex:1;padding:8px;background:#f3e8ff;color:#7b2ff7;border:none;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;text-align:center;text-decoration:none;display:block">
+                        👤 Ver perfil
+                    </a>
+                    <a href="chat.php?con=${s.solicitante_id}" 
+                        style="flex:1;padding:8px;background:linear-gradient(135deg,#7b2ff7,#a855f7);color:white;border:none;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;text-align:center;text-decoration:none;display:block">
+                        💬 Chatear
+                    </a>
+                </div>
+            </div>
+        `).join('');
+    });
+}
 </script>
 
 <?php function t($f){ $d=time()-strtotime($f); if($d<60) return "ahora"; if($d<3600) return round($d/60)." min"; if($d<86400) return "Hace ".round($d/3600)." horas"; return "Hace ".round($d/86400)." días"; } ?>
+
+<!-- Modal solicitudes de mi donación -->
+<div class="modal-overlay" id="modalMisSolicitudes">
+    <div class="modal" style="max-width:560px">
+        <button class="modal-close" onclick="document.getElementById('modalMisSolicitudes').classList.remove('active')">✕</button>
+        <h3>📋 Solicitudes de mi donación</h3>
+        <p id="modalSolSubtitle" style="color:#888;font-size:13px;margin-bottom:16px"></p>
+        <div id="listaSolicitudesDon">
+            <div style="text-align:center;padding:20px;color:#aaa">Cargando...</div>
+        </div>
+        <div class="modal-btns" style="margin-top:10px">
+            <button class="btn-modal-cancel" onclick="document.getElementById('modalMisSolicitudes').classList.remove('active')">Cerrar</button>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>
