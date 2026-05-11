@@ -1,6 +1,6 @@
 <?php
 $host     = "sql308.infinityfree.com";
-$dbname   = "if0_41893925_proyecto_equired";
+$dbname   = "if0_41893925_proyecto_requerido";
 $usuario  = "if0_41893925";
 $password = "T8w9uRjvGIsv3";
 $port     = "3306";
