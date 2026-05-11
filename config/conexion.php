@@ -1,9 +1,9 @@
 <?php
-$host     = getenv('MYSQLHOST')     ?: "localhost";
-$dbname   = getenv('MYSQLDATABASE') ?: "proyecto_equired";
-$usuario  = getenv('MYSQLUSER')     ?: "root";
-$password = getenv('MYSQLPASSWORD') ?: "";
-$port     = getenv('MYSQLPORT')     ?: "3306";
+$host     = "sql308.infinityfree.com";
+$dbname   = "if0_41893925_proyecto_equired";
+$usuario  = "if0_41893925";
+$password = "T8w9uRjvGIsv3";
+$port     = "3306";
 
 try {
     $pdo = new PDO(
