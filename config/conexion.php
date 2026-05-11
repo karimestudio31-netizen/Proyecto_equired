@@ -1,12 +1,13 @@
 <?php
-$host     = "localhost";
-$dbname   = "proyecto_equired";
-$usuario  = "root";
-$password = "";
+$host     = getenv('MYSQLHOST')     ?: "localhost";
+$dbname   = getenv('MYSQLDATABASE') ?: "proyecto_equired";
+$usuario  = getenv('MYSQLUSER')     ?: "root";
+$password = getenv('MYSQLPASSWORD') ?: "";
+$port     = getenv('MYSQLPORT')     ?: "3306";
 
 try {
     $pdo = new PDO(
-        "mysql:host=$host;dbname=$dbname;charset=utf8",
+        "mysql:host=$host;port=$port;dbname=$dbname;charset=utf8",
         $usuario,
         $password
     );
@@ -16,3 +17,5 @@ try {
     die("Error de conexión: " . $e->getMessage());
 }
 ?>
+
+
